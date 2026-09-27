@@ -1,1 +1,695 @@
-test
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shader View Manual</title>
+<meta name="description" content="How to use every feature of Shader View 2.0, the live node preview add-on for Blender's Shader Editor.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0b0c12;
+  --bg-side: #0f1017;
+  --surface: #151722;
+  --surface-2: #1c1f2c;
+  --border: #262a38;
+  --border-strong: #353a4c;
+  --text: #e6e8f1;
+  --text-soft: #a4a9bb;
+  --text-dim: #6f7588;
+  --accent: #8b7cff;
+  --accent-ink: #b3a9ff;
+  --accent-wash: rgba(139,124,255,.12);
+  --teal: #29d3ae;
+  --orange: #ff9a5c;
+  --red: #ff6b61;
+  --blue: #5aa9ff;
+  --key-bg: #202333;
+  --key-edge: #0a0b10;
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --side-w: 264px;
+  --measure: 100%;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 15.5px/1.65 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; }
+a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+/* ---------- layout ---------- */
+body { padding-inline: 20px; overflow-x: hidden; }
+.page { max-width: 760px; margin: 0 auto; padding-block: 0 80px; }
+.top {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-block: 22px;
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 7px; flex: none;
+  background: conic-gradient(from 200deg, #7c6bff, #1fd3ac, #ff9152, #e264f0, #7c6bff);
+  box-shadow: inset 0 0 0 7px var(--bg);
+}
+.brand b { font: 600 16px/1.1 var(--font-display); letter-spacing: -.01em; display: block; }
+.brand small { font: 500 11px/1.2 var(--font-mono); color: var(--text-dim); letter-spacing: .04em; }
+.top-link { font: 500 12.5px/1 var(--font-mono); color: var(--text-soft); text-decoration: none; border: 1px solid var(--border-strong); border-radius: 999px; padding: 8px 12px; white-space: nowrap; }
+.top-link:hover { color: var(--text); border-color: var(--accent); }
+.hero-glow { position: relative; }
+.hero-glow::before {
+  content: ""; position: absolute; inset: -60px 0 auto; height: 320px; z-index: -1; pointer-events: none;
+  background: radial-gradient(60% 70% at 30% 30%, rgba(124,107,255,.22), transparent 70%),
+              radial-gradient(40% 60% at 85% 20%, rgba(31,211,172,.12), transparent 70%);
+}
+@media (max-width: 520px) { .top-link { display: none; } }
+
+/* ---------- type ---------- */
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--text); text-wrap: balance; letter-spacing: -.015em; }
+h1 { font-size: clamp(30px, 4.4vw, 42px); line-height: 1.08; font-weight: 700; margin: 0 0 14px; }
+h2 { font-size: 27px; line-height: 1.2; font-weight: 600; margin: 0 0 10px; }
+h3 { font-size: 19px; line-height: 1.3; font-weight: 600; margin: 34px 0 8px; }
+h4 { font-size: 15.5px; font-weight: 600; margin: 22px 0 6px; letter-spacing: 0; }
+p, ul, ol { margin: 0 0 14px; }
+ul, ol { padding-left: 22px; }
+li { margin: 4px 0; }
+li::marker { color: var(--text-dim); }
+strong { font-weight: 600; color: var(--text); }
+.lede { font-size: 17px; color: var(--text-soft); max-width: 62ch; }
+.eyebrow { font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 10px; }
+code, .mono { font-family: var(--font-mono); font-size: .88em; }
+code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px; white-space: nowrap; }
+.path { font-family: var(--font-mono); font-size: .86em; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; }
+.path i { font-style: normal; color: var(--text-dim); padding: 0 3px; }
+
+kbd {
+  display: inline-block; min-width: 1.7em; text-align: center;
+  font: 500 12px/1 var(--font-mono); color: var(--text);
+  background: var(--key-bg); border: 1px solid var(--border-strong); border-bottom: 2px solid var(--key-edge);
+  border-radius: 5px; padding: 4px 6px 3px; margin: 0 1px; white-space: nowrap; vertical-align: 1px;
+}
+
+/* ---------- sections ---------- */
+section.doc { padding-top: 60px; margin-top: 60px; border-top: 1px solid var(--border); }
+section.doc:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.sec-head { display: grid; gap: 4px; margin-bottom: 18px; }
+.where {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+  font-size: 13px; color: var(--text-soft); margin: 4px 0 20px;
+}
+.where b { font: 500 10.5px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); font-weight: 500; }
+
+.hero-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 26px; }
+.chip { font: 500 12px/1 var(--font-mono); color: var(--text-soft); border: 1px solid var(--border-strong); border-radius: 999px; padding: 6px 10px; }
+figure { margin: 22px 0 26px; }
+figure img { display: block; width: 100%; border-radius: 10px; border: 1px solid var(--border); }
+figcaption { font-size: 13px; color: var(--text-dim); margin-top: 8px; max-width: var(--measure); }
+
+.steps { counter-reset: s; list-style: none; padding: 0; display: grid; gap: 12px; max-width: var(--measure); }
+.steps li { counter-increment: s; position: relative; padding-left: 40px; margin: 0; }
+.steps li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font: 600 13px/1 var(--font-display);
+  color: var(--accent-ink); background: var(--accent-wash); border: 1px solid var(--accent);
+}
+
+.note, .warn, .tip {
+  max-width: var(--measure); border-radius: 10px; padding: 12px 16px; margin: 16px 0 18px; font-size: 14.5px;
+  background: var(--surface); border: 1px solid var(--border);
+}
+.note p:last-child, .warn p:last-child, .tip p:last-child { margin-bottom: 0; }
+.note::before, .warn::before, .tip::before { display: block; font: 500 10.5px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 7px; }
+.note::before { content: "Note"; color: var(--accent-ink); }
+.tip::before { content: "Tip"; color: var(--teal); }
+.warn::before { content: "Good to know"; color: var(--orange); }
+
+/* icon tiles */
+.ic { width: 30px; height: 30px; border-radius: 5px; display: inline-block; vertical-align: middle; image-rendering: auto; flex: none; }
+.ic-sm { width: 22px; height: 22px; border-radius: 4px; vertical-align: -6px; }
+
+.icon-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin: 18px 0 8px; align-items: start; }
+.icon-group { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px 10px; }
+.icon-group h4 { margin: 0 0 10px; font: 500 10.5px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
+.icon-row { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13.5px; line-height: 1.5; }
+.icon-row:first-of-type { border-top: 0; }
+.icon-row b { display: block; font-weight: 600; font-size: 13.5px; }
+.icon-row span { color: var(--text-soft); }
+
+/* cards for preview objects */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 16px 0 22px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.card-top { display: flex; align-items: center; gap: 10px; }
+.card-top b { font: 600 15px/1.2 var(--font-display); }
+.card p { margin: 0; font-size: 13.5px; color: var(--text-soft); line-height: 1.55; }
+.card .use { font-size: 12.5px; color: var(--text-dim); }
+
+/* tool entries */
+.tool { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 4px 14px; padding: 16px 0; border-top: 1px solid var(--border); max-width: 760px; }
+.tool:first-of-type { border-top: 0; }
+.tool .ic { width: 36px; height: 36px; border-radius: 6px; margin-top: 2px; }
+.tool h4 { margin: 0 0 4px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.tool h4 .how { font: 400 12.5px/1.4 var(--font-body); color: var(--text-dim); letter-spacing: 0; }
+.tool p { margin: 0 0 6px; font-size: 14.5px; }
+.tool p:last-child { margin-bottom: 0; }
+.tool .noic { width: 36px; height: 36px; border-radius: 6px; border: 1px dashed var(--border-strong); display: grid; place-items: center; font: 500 11px/1 var(--font-mono); color: var(--text-dim); }
+
+/* tables */
+.tbl-wrap { overflow-x: auto; margin: 14px 0 22px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-top: 1px solid var(--border); }
+thead th { border-top: 0; font: 500 10.5px/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); background: var(--surface-2); }
+tbody tr.grp td { background: var(--surface-2); font: 600 12.5px/1 var(--font-display); color: var(--text-soft); padding-top: 9px; padding-bottom: 9px; }
+td.k { white-space: nowrap; width: 1%; }
+td.def { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-soft); white-space: nowrap; }
+td.name { font-weight: 600; white-space: nowrap; }
+
+/* legend swatches for stretch */
+.ramp { display: flex; align-items: center; gap: 10px; margin: 8px 0 14px; font: 500 12px/1 var(--font-mono); color: var(--text-soft); max-width: 460px; }
+.ramp i { flex: 1; height: 10px; border-radius: 3px; background: linear-gradient(90deg, #3b6fe0, #8a8f9e 50%, #e0443b); }
+.ramp.aniso i { background: linear-gradient(90deg, #8a8f9e, #e0443b); }
+
+/* panel mock */
+.panel-map { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 16px 0 22px; counter-reset: p; }
+.pm { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; color: var(--text-soft); line-height: 1.5; }
+.pm b { display: block; color: var(--text); font: 600 14px/1.3 var(--font-display); margin-bottom: 3px; }
+
+.faq details { border-top: 1px solid var(--border); padding: 12px 0; max-width: 760px; }
+.faq details:last-child { border-bottom: 1px solid var(--border); }
+.faq summary { cursor: pointer; font: 600 15.5px/1.4 var(--font-display); list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::after { content: "+"; color: var(--text-dim); font-weight: 400; }
+.faq details[open] summary::after { content: "−"; }
+.faq details > div { padding-top: 8px; font-size: 14.5px; }
+.faq details > div p { margin-bottom: 8px; }
+
+.foot { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-dim); display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.foot a { color: var(--text-soft); }
+.hide { display: none !important; }
+</style>
+</head>
+<body>
+
+<main class="page" id="top">
+  <header class="top">
+  </header>
+
+<!-- ================================================================ -->
+<section class="doc hero-glow" id="start">
+  <p class="eyebrow">Shader View 2.0 · User manual</p>
+  <h1>Live previews on every shader node</h1>
+  <p class="lede">Shader View draws a live thumbnail above each node in the Shader Editor and keeps it in sync while you work. This manual explains every tool, where to find it, and when it helps.</p>
+  <div class="hero-meta">
+    <span class="chip">Blender 4.x – 5.x</span>
+    <span class="chip">EEVEE · Cycles</span>
+    <span class="chip">macOS · Windows · Linux</span>
+    <span class="chip">Non-destructive</span>
+  </div>
+  <h3 id="install">Install</h3>
+  <ol class="steps">
+    <li>In Blender open <span class="path">Edit<i>›</i>Preferences<i>›</i>Add-ons</span>, choose <strong>Install from Disk…</strong> and pick the Shader View <code>.zip</code>.</li>
+    <li>Tick the checkbox next to <strong>Shader View</strong> to enable it.</li>
+    <li>Open a <strong>Shader Editor</strong> on an object that has a material. Thumbnails appear above the nodes after a second or two.</li>
+  </ol>
+
+  <h3 id="where">Where the controls live</h3>
+  <div class="panel-map">
+    <div class="pm"><b>On the preview</b>An icon strip beside each thumbnail, with the most common tools one click away. Hover an icon for a second to see what it does.</div>
+    <div class="pm"><b>Side panel</b>Press <kbd>N</kbd> in the Shader Editor and open the <strong>Shader View Pro</strong> tab. The <strong>Shader View 2.0</strong> panel holds every setting for the active node.</div>
+    <div class="pm"><b>Pop-overs</b><kbd>Shift</kbd><kbd>P</kbd> opens the same panel under the cursor, <kbd>Ctrl</kbd><kbd>R</kbd> the render settings and <kbd>Ctrl</kbd><kbd>O</kbd> the output picker.</div>
+    <div class="pm"><b>Preferences</b>Defaults for new previews, fading, performance and logging live in <span class="path">Preferences<i>›</i>Add-ons<i>›</i>Shader View</span>.</div>
+  </div>
+  <p>The side panel is split into sections you can fold: <strong>Tree</strong>, <strong>Output Socket</strong>, <strong>Preview</strong>, <strong>Inspect Values</strong>, <strong>UV Tools</strong> and <strong>Render</strong>. Sections only show options that make sense for the selected node, so a Color Ramp and a Mapping node show different controls.</p>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="preview">
+  <div class="sec-head">
+    <p class="eyebrow">01 — The preview</p>
+    <h2>The preview and its icons</h2>
+  </div>
+  <p>Each previewable node gets a thumbnail above it. Clicking a thumbnail makes its node active (<kbd>Shift</kbd>+click adds it to the selection). A small <strong>eye button</strong> on the node header shows or hides that node's preview; <kbd>Shift</kbd>+click the eye for a quick menu of preview settings.</p>
+  <p>To the right of the thumbnail is the icon strip, split into small groups. A lit icon with a blue frame means the tool is on. Icons only appear when they apply: the output switcher needs at least two outputs, tiling needs the flat plane, and value tools wait until the output is something they can read.</p>
+
+  <div class="icon-groups">
+    <div class="icon-group">
+      <h4>What is shown</h4>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAtElEQVR42u3bwRGDIBAFUMnkvmfqoy6K3AqSGjLZgBneLwD1uS4OaOu9v66D87gODwAAAAAAAAAAAAAAAAAAODHPikHmnFtOfoyxvwLmnFdELL/4iCiBL6mAzCy5GzuqThMEAACA94A7d+tfzy4eAQAAAAAAAAAAAAAAAAAAYD2gPqtXi1UAAAAAAKyeBao2Kj89ZmZ+PU6r+Fz+n7fHm/8FNEEAAAAAAAAAAAAAAAAAAHBc3mKAHW74tyMTAAAAAElFTkSuQmCC" alt=""><div><b>Preview object</b><span>Toggle through: plane → sphere → mesh → UV.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABDElEQVR42u3YMRKEIAxA0ejYU3svb8C5uAGXywXcrXBcZ7dZiZMMP5U2THhEiEzrur5k4Jhl8AAAAAAAAAAAAAAAAAAAAAAAgAFj8ZxcKeV4zjmPXQFnjJ4xWVyJXZO9s3o9x3oE4NdK3U3c6nN4DKAlfqeUU0oiIqKq3RBCnQKqKvPcN+UlyuTb6u/7HhOglew/pVtKEVWNsQf03rTCnQJej9PQe4BVF+i+AvgZAgAAAAAAAAAAAIgG0Hp4q3s8963wt4lb9vOuKuD6G9wuMrxWg8knkFI6Vnzbto/3IQDOtze1VlFVtxXAHmA1sNcJP1IBNEIAAAAAAAAAAAAAAAAAAAAAAAAAAAD4jTfAZlyM/ZqSTwAAAABJRU5ErkJggg==" alt=""><div><b>Output socket</b><span>Click for the next output, <kbd>Shift</kbd>+click for the previous one. The dots show which output is previewed.</span></div></div>
+    </div>
+    <div class="icon-group">
+      <h4>Mapping</h4>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAvElEQVR42u3bsQ3CMBAFUCeioUgqJsgKjIHEJFGGiZiEjiGyAhNQJUVK6BFYstzZ75exmzydJftkN5fH/g4Vpw2VB0DtAIfvD695LPqHT9NNBQAAAAAAAAAAAPzcCabm3u/R8et6VAEAAAAAAAAAAAAAAAAAUNxpMDXnoYuOL88ta74KAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBIsrvCqXeAUru4uV1fFQAAAAAAAAAAAPAnjbfDlgCAqvMBgLoZAND4hPkAAAAASUVORK5CYII=" alt=""><div><b>Split vector</b><span>Show one channel: X → Y → Z → off.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAj0lEQVR42u3bsQ2AIBBAUTAuwRr22DuAUzqAvfSuhAsYExK7e78k5IoXKC+XUnoK3JSCBwAAAAAAAAAAAAAAgJjNfwy5ax26v7T2er5d+9Cccz28AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvss2RnwBAAAAAAAAAAAAAAAABOwBtc8JFcIrrlsAAAAASUVORK5CYII=" alt=""><div><b>UV channels</b><span>Takes Split's place while the Checker is on: both → U → V.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAo0lEQVR42u3b2w2AIBAEQDA2QX3UdbVqC0AkEpj9x8fES1aiuZTypINzpcMDAAAAAAAAAAAA4NTcI4siYsmbqbV2r8m9L0MR0XSiVqTWi/76eEYAAAAAAAAAADCtCf5RcEYaqhEAAAAAAAAAAGiCPVl5S8wTAAAAAAAAAAAAMLMJ2hM0AgAAAAAAAMAOySO/zBz9mZwRAAAAAAAAAAAAAABgi7xSmipbj5gIwwAAAABJRU5ErkJggg==" alt=""><div><b>Coordinate Checker</b><span>Texture the preview with a grid driven by this output.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABFUlEQVR42u3awQ6DIAyA4dp4bzz6fD5Xn9HwAm4nErNdFCpj4e8Z1/qJFBandV1fMnCoDB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMBYMUf+mLs3KXrbtv5mgLuLmYmZXb6mdHwkdOgMSCndekL5Ru6OZw0AoBMAd2+28D2VX2uS9xI1tei/33xtTXNNksh+XLMfyHXd7SpFbXBZFjmOQ1JKXwlzT7/6NErH53Z7vs7MRFVl33e6wKMbobPw51RrvRE6vwI596MAEe/ckwtfSR1as/j0FKU1aeuEvZ0O518l7uVYzFmANhgYrTdCETFFfij5j3+JTXwpyiIIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMFG+drG4sP+QmmgAAAABJRU5ErkJggg==" alt=""><div><b>Stretch</b><span>Density or anisotropy of the coordinate.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAgUlEQVR42u3ZsQ2AMAxFwQSxhOfzXJ4VVkAgqn+vj4tT3CS7qq4V3LHCAwAAAAAAAAAAAAAAAAAAiZ1fB8zMq3Pd/cscNwAAAAAAAAAAAAAAAAAAHrT9DlsBANF5EbICAAAAAAAAAAAAAAAASMyLkBUAAAAAAAAAAAAAAAAAAAB53WDUEGA0S5YmAAAAAElFTkSuQmCC" alt=""><div><b>Tiling</b><span>Repeat the texture 2×2 or 3×3 to see the seams.</span></div></div>
+    </div>
+    <div class="icon-group">
+      <h4>Values</h4>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABQklEQVR42u2aQQ6EIAxFkbhn7fk4F4f0BDOrSRjjJBjor4yvS4Lif22hVZdt217hwRbDww0AAAAAAAAAAAAAAAAAAAAA5FZKCaUUIgAAAACAmy3KV2LHDS+lFEIIYd/3r/Gc838BqIXX4j7jZ2MqEFElPufcJKiepzgio0r8VVNBWC3F94ZwDcEqHaJ1zreG+6h7ugPoCXuPdDCJAItwnSIFFLv26DXiLJ6yujftsKd4ZeoML4XPHjql1FTX/xLcMvdsjZ70oBsc2QxdqdiOnr1y3cjN0C0CahHK9lfWC3gfme6l8AxF0HAACo+OXiPO4qlpukGLzs2iw7xFN3ilFLZKr9UyV3s9Z+l5SR3Qkw4K8ZJCqIbQAqKepzhV+DDi+bO00tN0gwAAAAButwkSAQAAAAAAAAAAAAAAAAAAAADgZG/bRJ+mqzKzAgAAAABJRU5ErkJggg==" alt=""><div><b>Hover probe</b><span>Exact value under the cursor, scalar to vector depends on output socket type.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA1ElEQVR42u3YwQ2EMAxE0WDRROpLXa5198oBrRYQM5b83cF/IiawzTk/o/HEaD4AAAAAAAAAAAAAAAAAAAAAqCczR2b2BDiGOxHCHe9GiArxToSoEu9CiErxDoSoFq9GiIrxSoSN3+LcBAFoPXvlBXVl1losQY4AAAAAAAAAAHAR4iLEEQAAgNeXoGpZ3l1uZZ6AJwFvx8uOwJ0QRbx0B1wJUsXLl+A/Ycp4y1vgV6A63vYaPAt1xFvvAcdgVzzfAtwEAQAAAAAAAAAAAAAAAAAAms4XSuU9ohFc3n8AAAAASUVORK5CYII=" alt=""><div><b>Out-of-range</b><span>Show red color for values above 1, blue for below 0.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAkElEQVR42u3asQ3AIAwEwBBlCWpqKFmD/YdByQROpLS+b1+4OJnOpdZ6H4lzHskDAAAAAAAAAAAAAAAAAAAAAAAAAECyXH8f7r3Dbs4Zdq2117m997AbY4TdWssGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMBXilNZXwAAAAAAAAAAAAAAAAAAAAAAAAAAgEx5AClwCRU4fUxeAAAAAElFTkSuQmCC" alt=""><div><b>Heatmap</b><span>False colour from min to max, with a legend.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABnElEQVR42u2aQXbEIAiGnbzuXede3oBzcQMu5wnalX1ZTKMoqNP8riPCJ6BgXud5focHjyM8fAAAAAAAAAAAAAAAAAAAAADA/MHMgZmXAnjNqga1hhLR/wDwzvC/jNN8uz2AqzG9RljIWAKgKG6ltLU8NwCeO+Yl2wwAM4cYY0gpucasiIScsxkE02PQ23iPNQ5r95x1D7C6PwyHgCZBtSqtkTUaCl8WFDUK3+WJEt/MXJVJRCZecMxw/etu3cVwSunXcK3sZTmgtlPldNC4KhGFGGPVOIuT4PDc/fJNT+YuczTrbFUNWiQpbThsVw7HGLeQ4QagtrsWl5aajNE8gI6QRwL0iFmvNeEBHrHvUbd7rQkP8IxLETGp/7e+Ct+NnPMWMpYAsLjFefYChwG0KFW+6QmFMkezzhIPaKnYSo2vkdnS91veD2glfw2HO28QEbXbj4bH41tiJm3xXmVmz3M7BXoVIaKhudsdgxYXn9lr4GkMj6N4HscPEvhFZlUtPqPY2RrAxzdEAAAAAAAAAAAAAAAAAAAAAOBjxw81fwQZOnhOrQAAAABJRU5ErkJggg==" alt=""><div><b>Contour</b>
+        <span>Click on preview to draw a threshold contour at this value.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAk0lEQVR42u3bwQnAIAwFUC1dIvM5l7PaBbwVxJD3j57kkXyk0B4RqxXO04oHAAAAAAAAAAAAAAAANfPedqE55/Z8jGECAAAAkKcET5eZCQAAAAAAAAAAAACQ4HvATc9kKwBAB+TKrj/+dIcVsAIXjaMJAAAAAAAAAAAAAAAAwKl0f4xYAQAAAAAAAAAAAAAAABTMB3xvEh10n+o7AAAAAElFTkSuQmCC" alt=""><div><b>Histogram</b><span>Distribution strip with min, max, mean and clipping.</span></div></div>
+    </div>
+    <div class="icon-group">
+      <h4>Placement</h4>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABO0lEQVR42u3bzQ3DIAwFYIJ69zl7ZQPmYoMs5wnaU6SoUtU2gHmOn++R+j6B+VOXdV2fKXDlFLwIQAACEIAABCAAAQhAAALErAfKD6m1Nn1fSvE9Aq4GuNUUmIEA1wOsESCboCUC7CpghQC9DFogwO8DSilJRJKIxASotSZVjTkCzpujbdtiAZzDH71gRE/IXsKPaozZU/gRCNlb+N4I2WP4ngjZa/heCMvs1+GW8O6nwOzwUwEQwk8DQAnfBHD1Dg8pfPMI+BcBLXyXKfArAmL4bj3gGwJq+K5N8BMCcvjuq8A7Anr4IcvgEdpD+GH7gH3fXYRPaeDboIgMu8aCHwGqmlS1+cHzFlthdASTswAygtlhCBXB9DSIiGB+HEZDmH4fMLsW/mMkeBGAAAQgAAEIQAACEIAABIhZLyD8dQo+JfzfAAAAAElFTkSuQmCC" alt=""><div><b>Size</b><span>Hold and drag to resize the thumbnail.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABaklEQVR42u2ayw2EMAxEIdq7z/RFB9TlDmjOFeyeIiGW8NkNHgPjIwoi8zKxTaDtuu7dPDhS8/AgAAIgAAIgAAIgAAIgAAIgAAIgAFSoaqOqkGe3yPOAkuhhGO7vgLUV93TDC2l9EWn6vl8Ur6ouTgiXBKeiPZwABWBmcAhwB+xJhGdCSJGt7gEB7gARgUKAl8FpHkBAcG+E5gKyuOn1UvnbMyY0gC0BCAjVAYzjWCxveybuDSGdscI5sS0J35rw0eoQzgG1VqfGdoFUgVoZ+9KNUM3JH+kTwlWBf2xaEpyB5EQbKgme4YR54jSzauLd+oCjTsjjb3MekIWIyKYTvM8G3d8F9kDwWn3IFlgT6Wl9NwfM97/3kRcUQCn5RYKQvMVHg5AQ4iNBSCjxS2NKb5GXAfBr64uEkNDip/eY2deXosttgX9quGf9d22EIgd/kCAAAiAAAiAAAiAAAiAAAiAAAiAAAiCAx8UHB5jP3Aw5pCQAAAAASUVORK5CYII=" alt=""><div><b>Pin</b><span>Anchor the preview to the editor so it stays put while you pan.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABFklEQVR42u2bQRKDIAxFIRdgzfk4F4fkBO1WHVudGhIoLzsWkPynwAfHmHN+hYVDwuIBAAAAAAAAAAAAAAAAAAAAAACwjlprqLWuCWAr3BOCeIv3hiAjiPeEIKOI94IQre4Ej8JSSrt2a23XLqX8F4ArIFaC8QEAAAAAugLouY31GFtmEd8rh8wkvkcumU28ds7HRujM4R1d3VlcOcFPfbQdo8z25LVrYBt80tnLv2vWoHIY+uVgY9XHZAp4vAlaOWW0gqxzyaiFWeWQ0QvsPTbbIAAAsHZwLW55LX734GLpKUynwB1h1q7SfA34JtDDUrssgmdCl/sytBXseayO/DCBEQIAAAAAAAAAAAAAAAAAAACA9eINIoBrdxtHHMMAAAAASUVORK5CYII=" alt=""><div><b>Move</b><span>Hold and drag a pinned preview.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAw0lEQVR42u3awQmDQBAFUFfSxDbg3ZZSWFrKPc0kZ8WAJLMTwry5rQjjfw6soq33/pwK1zwVLwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgDJ1+VXj9fbYrO/Xpc4E7MO/O5ZRLfPj6NmQmdOQAnAUfB/yzDl/B/BJqGyIIQARIbIgQgFGXPRoiBCAjLs1qsfXANn7eXS/sAnIfpCJ6tn8JOVlCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoEa9AME2QK/ACL+bAAAAAElFTkSuQmCC" alt=""><div><b>Fold</b><span>Pinned previews only: collapse the strip to fold, pin and move.</span></div></div>
+    </div>
+    <div class="icon-group">
+      <h4>Camera · Mesh preview</h4>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABcUlEQVR42u2bwQ2DMAxFA+rdZ/ZiA8/lDVguE7SnVC0KKLS2Y+D71ErB5D+MEztimKbpmW5sY7q5AQAAAAAAAAAAAAAAAAAAAICviQgiQES6gwjxCvQEMfTqByzL8vU/5/z+zczXA7B+wkS0OTbn7AbBHEARTkRfwmohz8xJRN5jPaLBFEARWRPxCWBL5N71oQG0imsR1uIrFIASwvM8qydNi9xgsgxqi7fyqQ7AYy3XvseoPTHLhLW3goSIAI+1O2QOKInPy4hILQrUIuBzK2ttmvd69ArN9RM8cn3ZMZ62GqxNvlc1OFqI+XW8pq9T9QNu3xABgDMDOJr998Zr+godAbWJe7bBTPYBrfW9huCQtYD3VjgUAGZ23wprvTLoB0Su1T16DugHWExyfeoT1WdKHdviPXy5AdB6Z097MFITsT4a2xt/maOxf5avyxyOtgLpVQsM+F4A/QAAAAAAAAAAAAAAAAAAAAAAAAAAuJ29AKzcvZbAlhZTAAAAAElFTkSuQmCC" alt=""><div><b>Orbit</b>
+        <span>Turn on, then drag on the thumbnail to orbit around the mesh.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABh0lEQVR42u2bzY3EIAyFCcrd5/RFB6nLHaQ5Ktg9MUJklNVO/MBMnqU5TC7BHw//AFm2bfsJD7YYHm4EQAAEQAAEQAAEQAAEQAAOTFW7v3Px0gy1zu/73uW962gH2+ciEnLO36cAVT05V/6LSEgpnWD1UMHac/ZrJ4/jeOt87yUwLAimlC7l3isgrmGwici/soK1MtzWAQWMiLx+0yignrlPZqx2vg2OqmqqgmjteHG+OFGiv6UqLOPDipBuG+0/tTZAIuoD8xjQY9AuAfwlS1QQYzdIAARAAAQwsg6oCx/vKc8UQJv2SmvbQrgqW9+1wVfPXS8Br3keugTqsvdOyTstgFruPWXLLEAATgDMGvjMAOSch5zmuABQ5/eZIdxSwCgIrvYEZ1dCtJ6R2SBEhCwREFBgI2ptogbs/mQIAQG5rKBngyJye/B1i404MYbdDyjd4d1NklJtopotmAKsZg2dVbgnOFMMQBj0jpCVfJHXZRZ+M/RwIwACIAACIAACIAACIICn2i/J+Kbg5cjFMgAAAABJRU5ErkJggg==" alt=""><div><b>Pan</b><span>Drag to move the view.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABVUlEQVR42u2bUQqDMAyGrfjeZ8/nuXqDXs4TbE/KEGVWk7ShX2Aw6GTmS5MmPxrmef4MHds4dG4AAAAAAAAAAAAAAAAAAAAAAIAebbL+w5TS/n1ZluoAgrYg8uvwP6sBRA1ASaRzzsO6rlUgqADYnC91pkZ6qBXBJw78XlOSOs0UwaeRP4NgBWBsyfk3BbSJFLjjfEpp/7SwE8aWI2VRCEdPN9ttK6yZBswCmtE5W4sxXq7XSCPGYVJAoPpfpcHZlm5tHHaxAzRBiQHIOfddA7Z53sv5L64HSA9DGsOVSSssGTWLIjm1mJeW9URcEntzzG3XxhjNNEJ1UfSuA8ffW/ULqrJ4aT04OmoBIVg9KFnSLVpCCB6eFNWE4K4Vlm6O3EyDWhBcjcMaENzpAdIQXAoikhDcKkJSEFxLYhJHYuCNkc4NAAAAAAAAAAAAAAAAAABAn/YFoCGYjZ5xGg8AAAAASUVORK5CYII=" alt=""><div><b>Zoom</b><span>Drag to move the camera closer or further.</span></div></div>
+      <div class="icon-row"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABHElEQVR42u3aMQ6CMBTG8UfDQMIJiDs713HkYNzIsHMPEyd1ImERiXnfC7X/riS179ev2AJV13UvK7glK7wBAAAAAAAAAAAAAAAAAAAAAECBrY7+wWFadq/PYx86niriidC3os3MUtPa83EPx5ADbIs/WlBkSmQAvxR+BMI7FemsxUctgVpVvGLwij7ZB5x99te+VMvB7SaojH42CUhNW/YSuF0vZQIc2elxGAIAAAAAAACA/wTIbfsrPwwVCZBrCtzvAcoUDNPi3r8rwJoCBYLquJ2Us5VDqtwBtjPkMXCvB6yhCfBCUBdvlsGLEfW/SxX1sfSnJMxjv3tN3aror8WLfDnKYQgAAAAAAAAAAAAAAAAAAAAAAAA4U3sDThZjFh1YBOgAAAAASUVORK5CYII=" alt="">
+        <div><b>Reset camera</b><span>Back to the default settings of virtual camera.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="objects">
+  <div class="sec-head">
+    <p class="eyebrow">02 — Preview objects</p>
+    <h2>Preview objects and camera</h2>
+  </div>
+  <p class="where"><b>Where</b> <img class="ic ic-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAtElEQVR42u3bwRGDIBAFUMnkvmfqoy6K3AqSGjLZgBneLwD1uS4OaOu9v66D87gODwAAAAAAAAAAAAAAAAAAODHPikHmnFtOfoyxvwLmnFdELL/4iCiBL6mAzCy5GzuqThMEAACA94A7d+tfzy4eAQAAAAAAAAAAAAAAAAAAYD2gPqtXi1UAAAAAAKyeBao2Kj89ZmZ+PU6r+Fz+n7fHm/8FNEEAAAAAAAAAAAAAAAAAAHBc3mKAHW74tyMTAAAAAElFTkSuQmCC" alt=""> icon on the strip · Side panel › <strong>Preview</strong></p>
+  <p>A texture can look very different on a flat square, on a lit ball and on the model it is made for. Pick the surface per node.</p>
+
+  <div class="cards">
+    <div class="card"><div class="card-top"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAtElEQVR42u3bwRGDIBAFUMnkvmfqoy6K3AqSGjLZgBneLwD1uS4OaOu9v66D87gODwAAAAAAAAAAAAAAAAAAODHPikHmnFtOfoyxvwLmnFdELL/4iCiBL6mAzCy5GzuqThMEAACA94A7d+tfzy4eAQAAAAAAAAAAAAAAAAAAYD2gPqtXi1UAAAAAAKyeBao2Kj89ZmZ+PU6r+Fz+n7fHm/8FNEEAAAAAAAAAAAAAAAAAAHBc3mKAHW74tyMTAAAAAElFTkSuQmCC" alt=""><b>Plane</b></div>
+      <p>Flat UV / procedural space: the texture exactly as it would bake. Supports zoom, panning and the tiling check.</p>
+      <span class="use">Use for masks, patterns, anything 2D.</span></div>
+    <div class="card"><div class="card-top"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABYElEQVR42u2bXRJFMAyF6diEHdiSZwvpWIhnW+pu7n3F+KsmPaEnb8yYJF9PQoq6bdtfVbC5qnAjAAIgAAIgAAIgAAIgAAIggDKtQTmepml1PAwDJI46xzi8Tfau5YDirCafei1cAdLBa6nBvSF5TTWIKiAmyHmeV8d930PUALkLbJPfnouBYaYEYlY/hFCFEE4B7UHSKAeHrM8zCEdKkYYAeRIcx1EEggkAEivxFIKEb4dOHg3B1DB0BeFT0+CyD9yFoNEPTI7DV7fJYvYD9iBIq+AxAIkGeFQGsX0hJZZX7AhplkODTm6pAu/9KYSu674H4G5JeO9VICSNwzl2bLTHY26LEwABEACk+VhogCIKQEKQ8M0SsLISKJ/OWkC5fRVfAirvBrUekTVU5t4SqFaJqX8fkKoG7d6i3gNSEsjRWGvUDxNFfSLDYYgACIAACIAACIAACIAACIAACMCY/QGVoZTWv5C/owAAAABJRU5ErkJggg==" alt=""><b>Sphere</b></div>
+      <p>A lit sphere. Bump, normals, Fresnel and anything that depends on light or view direction read correctly here.</p>
+      <span class="use">Use for shading and normal work.</span></div>
+    <div class="card"><div class="card-top"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABTUlEQVR42u2bQRKDMAhFo9M9a8/HuTxkTtCunImOttYAP5rPru2MCU8CfKzDNE3v1LGNqXMjAAIgAAIgAAIgAAIgAAIggD7thVp4nufVZ1WF7GOIlsOl44vTe989DsAZJxEgxlac3/62PSK3jICaOxoVDS4ALDfvDcIUgOdmva493sF5z/xQHQGIzG25ZnUEiAisi7NYuxpAznnV0HiWr/L6qppyzu3kAO8a7nXUTLXAXiS0XgZdxJAFiKjk6toKXz0WkZXFXQ7/Ew2Ikho2D/gGAimHwwciRyUTNRCBjcRUNYlIEhGY85AI2DZRaONUmAAIgAAIgAA6NpM+wEr6XhFLcAAeM4BIlciJEEr6tjIb6H4i5CqGroCIlsghZfBsfkDMB6B/kPgF65EAShDLk53y4Uq0DXxjhFqAAAiAAAiAAAiAAAiAAAiAADq0D45IyXdKLTUIAAAAAElFTkSuQmCC" alt=""><b>Mesh</b></div>
+      <p>Your real model with modifiers applied, scale and rotation respected. Has its own orbit, pan and zoom camera.</p>
+      <span class="use">Use to judge the material where it will live.</span></div>
+    <div class="card"><div class="card-top"><img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA3klEQVR42u3bwRHEIAhAUd3JnbP1WRdFUsFuDTuoQPwUYMYnoE6SPsb4tovj0y4PAAAAAAAAAAAAAAAAAACAK+PxDqCqoROYc8ZlgKo2EQmbvIi4F8CdAWbmXoXI7KMJ0gSTxD/pvLLkKAEAAAAAAAAAAICTYHREXagogYxX1PIZUAlhWwlUQdjaAyogbG+C2RGO7AKZEY5tg1kRjp4DMiIcPwhlQwg5CWZC4DL0lksNGQAAADE9YMUras+zzcw1Rvf+L1D9A4nODxM0QQAAAAAAAAAAAAAAAAAAgPviBxQoMP+xL0hrAAAAAElFTkSuQmCC" alt=""><b>UV Space</b></div>
+      <p>The mesh flattened into its UV layout with the live shader drawn across it. The 0–1 square is always in frame.</p>
+      <span class="use">Use to see how a texture sits on the islands.</span></div>
+  </div>
+
+  <h3 id="mesh">Choosing the mesh</h3>
+  <p>With <strong>Mesh</strong> selected, the panel shows a mesh field. Leave it empty and Shader View uses the object that carries the material; its name is shown as <em>Default: …</em> under the field. Pick any other mesh object in the file to preview on it instead.</p>
+  <p>Edits to that mesh are picked up automatically: changing modifiers, moving, rotating or scaling it sends the new shape to the preview. The refresh button next to the field forces a re-send if you ever need one. Clearing the field goes back to the default object.</p>
+
+  <h3 id="camera">Camera</h3>
+  <ul>
+    <li><strong>Orbit, Pan, Zoom</strong>: click one of the tools on the thumbnail's top edge, then drag cursor on the thumbnail. Click it again to switch it off. Value overlays follow the camera while you drag.</li>
+    <li><strong>Reset</strong>: reset to the initial settings.</li>
+    <li><strong>Ortho / Persp</strong>: Mesh previews can use either camera (side panel › Preview). Plane and UV Space are always orthographic.</li>
+  </ul>
+
+  <h3 id="size">Size, zoom and tiling</h3>
+  <ul>
+    <li><strong>Size</strong>: hold the size icon and drag, or set <strong>Size</strong> (50–1000 px) in the panel. The default size comes from Preferences.</li>
+    <li><strong>Zoom</strong>: 100–500 % in the panel crops into the flat preview. On a zoomed preview, hold <kbd>Alt</kbd><kbd>Shift</kbd> and drag to move around.</li>
+    <li><strong>Tiling</strong> <img class="ic ic-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAApElEQVR42u3bsQmAMBAF0CiO4FauIg4jLuNO9pbaBwshQdF7v7QQfORC7oLNsO5HCpw2BQ+A6ABd/mCbx19/cD8tVgAAAAAAAAAAAAAAABe9QOnZ+m7ynqPWe6wAAAAAAAAAAAAAAAAAAHiiG6x1k/TWjZQSAGAPKIuJkBIAAAAAAAAAAAAAAABAxG7QREgJAAAAAAAAAAAAAPhkGv8OKwEAoXMCKwsdJVU+q+cAAAAASUVORK5CYII=" alt="">: on the Plane, repeats the texture 2×2 or 3×3 and draws the tile borders. Seams and visible repetition show up at once. The thumbnail grows so each tile stays readable.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="outputs">
+  <div class="sec-head">
+    <p class="eyebrow">03 — Outputs</p>
+    <h2>Output sockets</h2>
+  </div>
+  <p class="where"><b>Where</b> <img class="ic ic-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABDElEQVR42u3YMRKEIAxA0ejYU3svb8C5uAGXywXcrXBcZ7dZiZMMP5U2THhEiEzrur5k4Jhl8AAAAAAAAAAAAAAAAAAAAAAAgAFj8ZxcKeV4zjmPXQFnjJ4xWVyJXZO9s3o9x3oE4NdK3U3c6nN4DKAlfqeUU0oiIqKq3RBCnQKqKvPcN+UlyuTb6u/7HhOglew/pVtKEVWNsQf03rTCnQJej9PQe4BVF+i+AvgZAgAAAAAAAAAAAIgG0Hp4q3s8963wt4lb9vOuKuD6G9wuMrxWg8knkFI6Vnzbto/3IQDOtze1VlFVtxXAHmA1sNcJP1IBNEIAAAAAAAAAAAAAAAAAAAAAAAAAAAD4jTfAZlyM/ZqSTwAAAABJRU5ErkJggg==" alt=""> icon · Side panel › <strong>Output Socket</strong> · <kbd>Ctrl</kbd><kbd>O</kbd></p>
+  <p>Nodes with several outputs (Noise gives Factor and Color, Separate XYZ gives three) preview one at a time. The previewed socket is highlighted on the node; the colour is set in Preferences.</p>
+  <ul>
+    <li>Click the output icon for the next socket, <kbd>Shift</kbd>+click for the previous one.</li>
+    <li><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>O</kbd> and <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>O</kbd> step forward and back without the mouse.</li>
+    <li><kbd>Ctrl</kbd><kbd>O</kbd> opens a picker with every output by name. The panel shows buttons for up to four outputs and a dropdown beyond that.</li>
+  </ul>
+  <h3 id="udim">UDIM tiles</h3>
+  <p>An Image Texture that uses a tiled (UDIM) image previews one tile at a time. Hold <kbd>Alt</kbd><kbd>Shift</kbd> and double-click the right half of the thumbnail for the next tile, the left half for the previous one.</p>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="values">
+  <div class="sec-head">
+    <p class="eyebrow">04 — Values</p>
+    <h2>Inspecting values</h2>
+  </div>
+  <p class="where"><b>Where</b> Values group on the strip · Side panel › <strong>Inspect Values</strong></p>
+  <p>A grey thumbnail hides a lot: 1.0 and 3.0 both look white, and negative numbers look black. Every preview also keeps the real floating-point value of each pixel, on the plane, the sphere or your mesh. These tools read it.</p>
+
+  <div class="tool" id="probe">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABf0lEQVR42u2bQQ7CIBBFC2maHsCDuPQOXsV04UG6ML2MN+iyB3GvcVNXTQjWSIU/gPxZElP6HzMwM1R1vN7nqmDTVeFGAKUDqO2B2+X014J33UAPIAACIAACIAACIAACiA5g1w1vmRk9gAAIgACilsOSpahq2tVxyZK8lhZuilvG7bG18WxDwBTjIsj8ncQRqaXEbzUpCDVSvK8LmxBQ4aDRMe/q7qGeGR0AYgNDhgPEAxDumkUISOzaoefQuawU6tlRU+Gxn6qxn8qsBUzhMSEo+3rc51hSTVvNz8dXt/0k+HDeO9UP9hw+7118NfizB/hmf7YXrK0+IsNMxgNMwa7is+8HuMR89qcAMhlKPhWWaGCEnkPnslLZVIOIyg3ZIotaDW65GUKFV42MVd+Vk2iOQvMAn3CQ6gzDEyETggsI6bZ40FR4606+XIy4FFCodxDNBG1hkiudZEMkBSMAAijcopbDKXyZzhAgAAIgAAIgAAIggGJN8b/DDAECKNpeaz2zo4rrv9AAAAAASUVORK5CYII=" alt="">
+    <div>
+      <h4>Hover probe <span class="how">Strip icon, or hold <kbd>D</kbd> over any preview</span></h4>
+      <p>Shows the exact value under the cursor, with a dot on the sampled point. With the icon on it reads live while you hover; <kbd>D</kbd> works on any preview while the key is held, and a click copies the value. Vectors are shown as a pair, for example <code>(0.31; -0.10)</code>. On the sphere and the mesh the value comes from the surface point under the cursor.</p>
+    </div>
+  </div>
+  <div class="tool" id="oor">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABCElEQVR42u3bMQ6CQBBGYXayR/ACNl7GxJMQD2M8CZ1XoeEC9JZYSogxCGH+wX1b0pD3hV0mJKTz4zlUBS+rCl8AlA6Qpxf6W/3XwYfrnScAAAAAAAAAAAAAAAA1QJO6qkldmQDjcCWCqePVCBYhXolgUeJVCBYpXoFg0eK9ESxivCdC3voGl+HIIAQAAHHX4jNg+nlZvZZ+zs/eN2QLAAAAAAAAAACDEIMQWwAAAHZ9CM4+LE/rDsu+rff9BKwJ2DrebQssCfGIdz0Dfgnyinc/BOeEecZL3gLfAr3jZa/BT6GKeOkcMA5WxbvMAZH2O5MgAAAAAAAAAAAAAADvlfh3mC0AQNHrBevgUdOr6VYAAAAAAElFTkSuQmCC" alt="">
+    <div>
+      <h4>Out-of-range <span class="how"><kbd>Shift</kbd><kbd>S</kbd></span></h4>
+      <p>Paints red where the value goes above 1 and blue where it drops below 0. The quickest check for masks, roughness, height and displacement data that should stay inside 0–1.</p>
+    </div>
+  </div>
+  <div class="tool" id="minmax">
+    <span class="noic">min</span>
+    <div>
+      <h4>Min / Max <span class="how"><kbd>Shift</kbd><kbd>M</kbd> · panel button</span></h4>
+      <p>Prints the lowest and highest value under the thumbnail. When a UV channel is isolated the labels say what they measure, for example <em>max U</em>.</p>
+    </div>
+  </div>
+  <div class="tool" id="hist">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAp0lEQVR42u3bsQmAMBAF0EQcwa1cRRxGXMad7C21FztRkty7Ml0e/44jaB6340yBq0vBC0B0gP5+sC9T0xce5lUCAAAAAAAAAAAAHjfB0ja1rzdULQAAgCHYxDCTAAAAAAAAAAAAAAAVvAeUtCZrAQBmQF31ND/ezA4toAUKiqMEAAAAAAAAAAAAAAAA4K/K9z9GfC2uBQAAAAAAAAAAUTdBCQAAIFRdRCgeeCsW2NoAAAAASUVORK5CYII=" alt="">
+    <div>
+      <h4>Histogram</h4>
+      <p>A strip under the preview showing how the values are distributed, with min, max, mean and the share of clipped pixels. A mask that never reaches 1.0 is obvious in a second.</p>
+    </div>
+  </div>
+  <div class="tool" id="heat">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAzUlEQVR42u3bMQrCQBAF0ERSipV2HkMsTCs24k2ChxHBs2iR0jOIXsDCSoRgpb0wEWLnvl/uJwv7mG0Wki/3zStLOL0s8QBIHaD4XLhtqr8+8HC9NQEAAAAAAAAAAAAAAAAAAABA4im6ftg/3MOuWU3C7lrmrfvOpqew242PYTevShMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN/S+VX4sRjE5fMcVqO6fd9LHb8az7PSBAAAAAAAAAAAAAAAAAAAAAAAfk7u32FXAEDSeQMwYxeA3UyXfQAAAABJRU5ErkJggg==" alt="">
+    <div>
+      <h4>Heatmap</h4>
+      <p>Replaces grey with a false-colour ramp from the minimum to the maximum and adds a legend. Small differences that are invisible in grey become clear bands.</p>
+    </div>
+  </div>
+  <div class="tool" id="contour">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACB0lEQVR42u1bO46DMBC1LYQ4QDjVXiMlouIYqRAlF8mZQr+Ihq0sITbr7zzbG8ZVlNhjz5uP5+PIr+f3Li48lLj4YACuDkB1/mIZu49m+NZPrAEMAAPAADAADAADwADkB+DWT78Ck+yRYKoIzPZbqoi0ysH4X8wd5+rPaCCqFIy7MnGedzQRFBAKyfwydlEHP65H+QpFzThCYkcQqIGoKJmXdSNejztEUhqEdpjFrZ/IACbVABTzyD0Upc2njAOoTEGeq8K+quVj866H9qEVel5SH+BzYJOfaIdZ7NvqZOPL2JFogUqh+kdpmWz49bh7X3uxICi09PXt4KOqy9gJWTdW5ihuAoWUvp4T4rn1Gp99isoGKQIidBQIT4dl3RRBAwaATboUQYuNRqwf4IoQwgEibBa1J2sAwvYRxQvUnqwBSLtshzn6gDYa2UNh09i3tQgaWQCgiOJSVIZVLIMuc0JMQa/x2SeLBrhkbDrH96G5b6tTpll0KPzOHEzaoAueIbRDB0lFyKeCY9IG7fAoy2vWZCu2JhjjrFKvewccyS0QqoYxnaMi+wIUgU/qPcg6Q9rGUXe3putyO2TTAFQzk6rZmiwSpGpmpmiPw94HmEBweSCBTK2TAGDKCVy04mOeyJgYSvUMpggAcko5Wz3gPwwGgAFgABgABoABuPCQ/N9hNgEG4NLjB0mcKbBieM/QAAAAAElFTkSuQmCC" alt="">
+    <div>
+      <h4>Contour</h4>
+      <p>Turn it on, then click the thumbnail: the value under the cursor becomes the threshold and its contour line is drawn across the preview. Hold and move to scrub the threshold live. Handy for placing a Color Ramp stop or checking where a mask cuts.</p>
+    </div>
+  </div>
+  <div class="tool" id="split">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAvElEQVR42u3bsQ3CMBAFUCeioUgqJsgKjIHEJFGGiZiEjiGyAhNQJUVK6BFYstzZ75exmzydJftkN5fH/g4Vpw2VB0DtAIfvD695LPqHT9NNBQAAAAAAAAAAAPzcCabm3u/R8et6VAEAAAAAAAAAAAAAAAAAUNxpMDXnoYuOL88ta74KAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBIsrvCqXeAUru4uV1fFQAAAAAAAAAAAPAnjbfDlgCAqvMBgLoZAND4hPkAAAAASUVORK5CYII=" alt="">
+    <div>
+      <h4>Split vector <span class="how"><kbd>Shift</kbd><kbd>V</kbd></span></h4>
+      <p>Shows one channel of a vector or colour output as its own preview. The icon cycles X → Y → Z → off; with split on, <kbd>Alt</kbd><kbd>Shift</kbd> double-click on the right or left half of the thumbnail steps to the next or previous channel. The value tools then read that one channel.</p>
+    </div>
+  </div>
+  <div class="tool" id="scalarmode">
+    <span class="noic">f(v)</span>
+    <div>
+      <h4>Scalar mode <span class="how">Side panel › Inspect Values</span></h4>
+      <p>How a vector becomes one number for Out-of-range, Heatmap, Contour, Histogram and Min/Max: <strong>Luma</strong> (brightness), <strong>Vector Length</strong> (magnitude, useful for displacement and normal vectors) or <strong>Normal Changes</strong> (how far it differs from the original direction). It appears when one of those tools is on and split is off.</p>
+    </div>
+  </div>
+
+  <div class="warn">
+    <p><strong>Colour and shader outputs</strong> can't be reduced to one honest number, so only the hover probe is offered for them. Split a channel to unlock the other tools.</p>
+    <p>Some tools switch each other off because they draw over the same picture. Stretch, for example, keeps only the hover probe, since its own colour ramp is the whole picture.</p>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="uv">
+  <div class="sec-head">
+    <p class="eyebrow">05 — UV tools</p>
+    <h2>UV tools</h2>
+  </div>
+  <p class="where"><b>Where</b> <img class="ic ic-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAo0lEQVR42u3b2w2AIBAEQDA2QX3UdbVqC0AkEpj9x8fES1aiuZTypINzpcMDAAAAAAAAAAAA4NTcI4siYsmbqbV2r8m9L0MR0XSiVqTWi/76eEYAAAAAAAAAADCtCf5RcEYaqhEAAAAAAAAAAGiCPVl5S8wTAAAAAAAAAAAAMLMJ2hM0AgAAAAAAAMAOySO/zBz9mZwRAAAAAAAAAAAAAABgi7xSmipbj5gIwwAAAABJRU5ErkJggg==" alt=""> <img class="ic ic-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABFUlEQVR42u3awQ6DIAyA4dp4bzz6fD5Xn9HwAm4nErNdFCpj4e8Z1/qJFBandV1fMnCoDB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMBYMUf+mLs3KXrbtv5mgLuLmYmZXb6mdHwkdOgMSCndekL5Ru6OZw0AoBMAd2+28D2VX2uS9xI1tei/33xtTXNNksh+XLMfyHXd7SpFbXBZFjmOQ1JKXwlzT7/6NErH53Z7vs7MRFVl33e6wKMbobPw51RrvRE6vwI596MAEe/ckwtfSR1as/j0FKU1aeuEvZ0O518l7uVYzFmANhgYrTdCETFFfij5j3+JTXwpyiIIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMFG+drG4sP+QmmgAAAABJRU5ErkJggg==" alt=""> <img class="ic ic-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA3klEQVR42u3bwRHEIAhAUd3JnbP1WRdFUsFuDTuoQPwUYMYnoE6SPsb4tovj0y4PAAAAAAAAAAAAAAAAAACAK+PxDqCqoROYc8ZlgKo2EQmbvIi4F8CdAWbmXoXI7KMJ0gSTxD/pvLLkKAEAAAAAAAAAAICTYHREXagogYxX1PIZUAlhWwlUQdjaAyogbG+C2RGO7AKZEY5tg1kRjp4DMiIcPwhlQwg5CWZC4DL0lksNGQAAADE9YMUras+zzcw1Rvf+L1D9A4nODxM0QQAAAAAAAAAAAAAAAAAAgPviBxQoMP+xL0hrAAAAAElFTkSuQmCC" alt=""> icons · Side panel › <strong>UV Tools</strong> (folded by default)</p>
+  <p>These tools judge <strong>the coordinate this node produces</strong>, after every Mapping, warp and bit of vector math, instead of the UV map stored on the mesh. Preview a Mapping node and you see what Mapping does to your texture coordinate. The rest of the material stays connected.</p>
+  <p>The top line of the section names what is being looked at, for example <code>Rock · UVMap</code>. If the mesh has more than one UV map, a dropdown lets you choose.</p>
+
+  <div class="tool" id="checker">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAw0lEQVR42u3bQQqDMBAFUC0ewVv1KqWHES/jnbrvUvcBYToYsebN0kVMHjP4Cdg/l+/aNVyPrvEC0DrAUD74TK9bH3h8zzoAAAAAAAAA2MkBmW/pVSqTYYbM4SMviiJFNx1ZL7o3IwAAAAAAAAAAqJoEjww40fUyCdUIAAAAAAAAAAAkwV/qqldiOgAAAAAAAAAAAKB2EnQnaAQAAAAAAACAO1Rf/jJTK3CcUZm9V7sTNAIAAAAAAADA/wUhHQAAQFO1Ab89Nab/1zRCAAAAAElFTkSuQmCC" alt="">
+    <div>
+      <h4>Coordinate Checker</h4>
+      <p>Feeds the node's output into a grid texture instead of showing it as colour. Stretching, seams, rotation and mirrored islands become visible.</p>
+      <p><strong>Color Grid</strong> (on by default) uses Blender's lettered colour tiles, so a rotated or mirrored patch is obvious. Switch it off for plain squares and set how many fit across 0–1 with <strong>Squares</strong>.</p>
+      <p>If the node reads the camera direction (Camera Data, Fresnel, Layer Weight, or Geometry › Incoming), the panel warns that the grid moves when you orbit. That movement is real, not a bug.</p>
+    </div>
+  </div>
+  <div class="tool" id="uvspace">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA3klEQVR42u3bwRHEIAhAUd3JnbP1WRdFUsFuDTuoQPwUYMYnoE6SPsb4tovj0y4PAAAAAAAAAAAAAAAAAACAK+PxDqCqoROYc8ZlgKo2EQmbvIi4F8CdAWbmXoXI7KMJ0gSTxD/pvLLkKAEAAAAAAAAAAICTYHREXagogYxX1PIZUAlhWwlUQdjaAyogbG+C2RGO7AKZEY5tg1kRjp4DMiIcPwhlQwg5CWZC4DL0lksNGQAAADE9YMUras+zzcw1Rvf+L1D9A4nODxM0QQAAAAAAAAAAAAAAAAAAgPviBxQoMP+xL0hrAAAAAElFTkSuQmCC" alt="">
+    <div>
+      <h4>UV Space</h4>
+      <p>Flattens the evaluated mesh into its UV layout and draws the live shader across it. The 0–1 square is always framed, and islands that leave it stay visible. Switching UV Space off returns to the object you were on before.</p>
+      <p>The flattened copy has different positions and normals, so nodes that read Geometry, Object Info, Tangent, Bump and similar inputs show something else here. The panel lists them when that happens.</p>
+    </div>
+  </div>
+  <div class="tool" id="channels">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAuElEQVR42u3bsQ2DMBAFUEBpUkDFBFmBMZCYJMowEZPQMQQrMAEVFJShjyjiyE3i90vLjZ/Okn2y83bcX1nCKbLEAyB1gMv7wPK8//WC60evAgAAAAAAAAAAAE5Pgt9kqPag+d16VQEAAAAAAAAAAAAAAAAA8PO3wVhpbmXQ/GneVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhCRKVzjWm58YXV4VAAAAAAAAAAAA8GFyf4dtAQBJ5wA4yhNinKe0owAAAABJRU5ErkJggg==" alt="">
+    <div>
+      <h4>Channels: Both · U · V</h4>
+      <p>With the Checker on, the value tools read the coordinate itself. <strong>Both</strong> gives a vector probe and a two-ramp heatmap (U red, V green). Pick <strong>U</strong> or <strong>V</strong> to isolate one channel at full precision; Contour, Histogram and Min/Max come back. The switch only appears once a value tool is on.</p>
+    </div>
+  </div>
+  <div class="tool" id="stretch">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABK0lEQVR42u2bTQ6EIAxGgRDjAbzVXMV4GONl5k7ux7hhViSG2QgUxeF9S0VbHqUFf/Tr/XGqYRnVuADQOgAbHljn8a87PEwLEQAAAAAAAAAAAAAAAAAAAAAAAAAAANqWlbxZ+LSllCSfWhnJzuuuV7rrT1+T2l4StGgEuH2LGiHfkdj25AAAVAJgmJbLEl8p+ybHeC3K8cU8vfO5PtkcI3e/RfL2vV+xVSWpDPq67fbtx6A/d3Y0Utv7cnu8LjxHFSgVAUfCYahdvRA6ToHYkU8CIDHnSia+FD9MTvKpSak+masN1rY7tHcZrmVbzF6AMiioqxdCVUXAOo/K7VuUc6ntJXOPaAQ88QszkiAAAAAAAAAAAAAAAAAAAAAAAAAAAGhOmn+HmQIAaFpfyW199UPb34oAAAAASUVORK5CYII=" alt="">
+    <div>
+      <h4>Stretch <span class="how">Mesh or UV Space</span></h4>
+      <p>Is the coordinate spread evenly over the surface? It is measured per unit of real surface, with the tilt of the surface towards the camera corrected, and shown as an overlay with a legend of real multiples. Two measures:</p>
+      <p><strong>Density</strong>: how fast the coordinate changes. Blue where the pattern smears (sparse), red where it crowds, grey at ×1, which is this field's median.</p>
+      <div class="ramp"><span>×0.25</span><i></i><span>×4</span></div>
+      <p><strong>Anisotropy</strong>: shape rather than area. Grey where a square stays square, red where it is stretched one way. A grid of coordinate squares is drawn on top so you can see how they smear. A coordinate can pass the density check at ×1.03 and still be made of 30:1 slivers.</p>
+      <div class="ramp aniso"><span>×1</span><i></i><span>×8</span></div>
+      <p>The hover probe reads the measure directly, for example <em>density ×2.0</em> or <em>aniso ×3.4</em>. On the Mesh, Stretch always uses the orthographic camera because perspective would distort the measurement. In UV Space the mesh's own UV distortion is folded in.</p>
+    </div>
+  </div>
+  <div class="tip">
+    <p>Check <strong>Density</strong> first to find where detail is wasted or starved, then <strong>Anisotropy</strong> to find where the pattern is smeared in one direction. Leaving Mesh or UV Space with the view icon switches Stretch off.</p>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="render">
+  <div class="sec-head">
+    <p class="eyebrow">06 — Render</p>
+    <h2>Render settings and baking</h2>
+  </div>
+  <p class="where"><b>Where</b> Side panel › <strong>Render</strong> · <kbd>Ctrl</kbd><kbd>R</kbd> pop-over</p>
+  <p>Every setting here is per node. Keep the defaults light and raise quality only on the node you are studying.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Engine</td><td>EEVEE or Cycles. Script (OSL) nodes always render with Cycles.</td></tr>
+        <tr><td class="name">Resolution · Auto</td><td>Render size from 64 to 1024 px. <strong>Auto</strong> picks it from the thumbnail size and the preview object, so a big thumbnail is never blurry. Choosing a value by hand turns Auto off for that node.</td></tr>
+        <tr><td class="name">Samples</td><td>1–32. Two is enough for most nodes; raise it for noisy Cycles previews.</td></tr>
+        <tr><td class="name">Lit</td><td>Sphere and Mesh only. Adds diffuse light and shadow so bump and normal detail read as relief.</td></tr>
+        <tr><td class="name">Raw Colors</td><td>Shows the values without the view transform, useful for data textures such as roughness or normal maps.</td></tr>
+        <tr><td class="name">Re-render</td><td>Renders this preview again.</td></tr>
+        <tr><td class="name">Bake to Image…</td><td>Renders the node's output flat at 512, 1024, 2048 or 4096 px and saves it as an image inside the <code>.blend</code>, named <code>&lt;node&gt;_bake</code> by default.</td></tr>
+        <tr><td class="name">Apply Settings to Selected</td><td>With several nodes selected, copies the active node's object, camera, size, zoom, engine, resolution, samples, lighting and colour settings to all of them.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="focus">
+  <div class="sec-head">
+    <p class="eyebrow">07 — Big trees</p>
+    <h2>Working in big trees</h2>
+  </div>
+  <p>A hundred thumbnails shouldn't feel like a hundred distractions. These tools keep the part you care about in sight.</p>
+
+  <div class="tool" id="pin">
+    <img class="ic" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABqElEQVR42u2bQY6CMBiFaWMIB8BTeY1ZElYeY1aEpReZMw17jRtcYUqnIKTlf//Aa2Ki1SDva/v62qq5/Nz77MDFZgcvBHB0ACe/omuqXQsu65Y9gAAIgAAIgAAIgAAIgAC0ACjr9k9Eha0FELnc5MXoteR6xGoRPzw3eSHaG6BDwORF1j8fo8dQLwVBnQlKQ1A5C0hCgANwPQABAQaga6qRSBQENUMABQE+DfruLw3BIoS7Irqmgg4Hi2h1VzjaE5JH4fP19r7ROQOcqi/r9p0IQ9fpn49RYoyNzXaLFp5qQb/VY2eHJObrH47GEvW7ecx1BgAhwe57a75n84MR92ZixumSnqDWBFNB+JQT1ra+6CwQC2EqJ8wZpLppMEVPcHOCv2xOsXGS3ARTGOOWO0OQ0+FByJIAI703KB6Fl6Y4qX1BEQAhQwtB2OWm6Fz+R22FiwGYMj9NEKy0eG0QLEK8JggWJT70mS0zv+hyeK2TIyFYtHh/9ff7/fW/h0DMHI74keZJg/Dd5gACIAACIAACIAACIAACIAACIACtxfC/wxwCBHDo8gJDkBC3MaKFIgAAAABJRU5ErkJggg==" alt="">
+    <div>
+      <h4>Pin a preview</h4>
+      <p>The pin icon anchors a thumbnail to the editor window. It stays on screen and keeps updating while you work at the other end of the tree. Drag it with the move icon, and use the fold icon to shrink its strip to fold, pin and move. Pinned previews and their icons are always drawn on top. Click the pin again to put it back on its node.</p>
+    </div>
+  </div>
+  <div class="tool" id="solo">
+    <span class="noic">2×</span>
+    <div>
+      <h4>Solo <span class="how">Double-click a thumbnail</span></h4>
+      <p>Enlarges the preview in place and draws it over everything else. Double-click again to restore it.</p>
+    </div>
+  </div>
+  <div class="tool" id="fade">
+    <span class="noic">fade</span>
+    <div>
+      <h4>Fade and outline the active chain <span class="how">Preferences</span></h4>
+      <p>Select a node and the previews that aren't connected to it fade out, while its chain stays at full strength. A coloured border marks previews inside the chain (green) and outside it (red). Both can be turned off or recoloured, and the fade strength is adjustable.</p>
+    </div>
+  </div>
+  <div class="tool" id="arrange">
+    <span class="noic">⇶</span>
+    <div>
+      <h4>Arrange nodes <span class="how">Side panel › Tree · right-click menu</span></h4>
+      <p>Lays the tree out in clean columns and leaves room for every thumbnail, so previews never overlap nodes. <strong>Arrange All</strong> handles the whole tree, <strong>Selected</strong> only the selected nodes. The right-click menu offers <strong>Arrange Nodes</strong> and <strong>Arrange Nodes + Reroutes</strong>.</p>
+      <p>With <strong>Add Reroutes</strong>, links that jump across columns run along a straight horizontal lane, and links leaving the same socket share one reroute. Reroutes you gave a label, and reroutes grouped in a frame of their own, are left alone. After running it, the redo panel (<kbd>F9</kbd>) adjusts the horizontal and vertical gaps. Arrange is a normal undo step.</p>
+    </div>
+  </div>
+  <div class="tool" id="hide">
+    <span class="noic">eye</span>
+    <div>
+      <h4>Show, hide, disable</h4>
+      <p>The eye button on a node toggles its own preview. <kbd>Ctrl</kbd><kbd>H</kbd> toggles the previews of all selected nodes. <kbd>Ctrl</kbd><kbd>E</kbd> disables every preview and stops rendering altogether; press it again to bring them back. In Preferences, <strong>Previews Visible by Default</strong> decides whether new nodes start with a thumbnail.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="textures">
+  <div class="sec-head">
+    <p class="eyebrow">08 — Textures</p>
+    <h2>Textures and images</h2>
+  </div>
+  <h3 id="paint">Painting and editing textures</h3>
+  <p>Paint on a texture in the Image Editor or in Texture Paint mode and the previews that use it update about half a second after you finish a stroke, including nodes after it and group nodes that contain it. Unsaved paint is included. The same happens when you save, pack or reload an image, change its colour space, or edit the file in another program.</p>
+  <h3 id="bigtex">Large and packed textures</h3>
+  <p>Thumbnails are a few hundred pixels wide, so there is no reason to load an 8K texture for them. Images larger than 2048 px, and images packed into the <code>.blend</code>, are passed to the preview as a copy of at most 2048 px in the add-on's temporary folder: JPEG normally, PNG when the image has transparency, EXR for float images. Your own images are never changed.</p>
+  <div class="note">
+    <p>What matters for speed is the pixel size of an image, not its file size. A 5 MB 8K JPEG still unpacks to about 256 MB in memory.</p>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="limits">
+  <div class="sec-head">
+    <p class="eyebrow">09 — Limits</p>
+    <h2>What isn't previewed</h2>
+  </div>
+  <ul>
+    <li><strong>Attribute and Color Attribute nodes, and every node linked after them.</strong> They read data stored on your mesh, and the preview process has no access to your mesh's attributes, so these nodes are skipped instead of showing a wrong picture. The panel explains this when such a node is selected.</li>
+    <li><strong>Custom nodes from other add-ons.</strong> The preview process starts with only Blender's own add-ons. If you preview nodes that another add-on registers, add its module name to <strong>Extra Add-ons in Preview Process</strong> in Preferences, then disable and re-enable Shader View. Extensions use their full name, such as <code>bl_ext.blender_org.some_addon</code>.</li>
+    <li><strong>Nodes that read geometry, in UV Space.</strong> The flattened layout is not your model, so Geometry, Object Info, Tangent and similar inputs change. The panel warns you.</li>
+    <li><strong>Camera-dependent nodes.</strong> Fresnel, Layer Weight, Camera Data and Geometry › Incoming change as the preview camera moves. That's correct behaviour, but the Checker will appear to swim.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="keys">
+  <div class="sec-head">
+    <p class="eyebrow">10 — Shortcuts</p>
+    <h2>Keyboard and mouse</h2>
+  </div>
+  <p>All shortcuts work in the Shader Editor. You can remap them in <span class="path">Preferences<i>›</i>Keymap</span>.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="2">Panels</td></tr>
+        <tr><td class="k"><kbd>Shift</kbd><kbd>P</kbd></td><td>Shader View pop-over with every setting for the active node</td></tr>
+        <tr><td class="k"><kbd>Ctrl</kbd><kbd>R</kbd></td><td>Render settings pop-over</td></tr>
+        <tr><td class="k"><kbd>Ctrl</kbd><kbd>O</kbd></td><td>Output socket picker</td></tr>
+        <tr class="grp"><td colspan="2">Preview</td></tr>
+        <tr><td class="k"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>O</kbd></td><td>Next output socket</td></tr>
+        <tr><td class="k"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>O</kbd></td><td>Previous output socket</td></tr>
+        <tr><td class="k"><kbd>Shift</kbd><kbd>V</kbd></td><td>Split vector on / off (selected nodes)</td></tr>
+        <tr><td class="k"><kbd>Ctrl</kbd><kbd>H</kbd></td><td>Show / hide previews of the selected nodes</td></tr>
+        <tr><td class="k"><kbd>Ctrl</kbd><kbd>E</kbd></td><td>Disable / enable all previews</td></tr>
+        <tr class="grp"><td colspan="2">Values</td></tr>
+        <tr><td class="k"><kbd>D</kbd> hold</td><td>Probe the value under the cursor on any preview; click to copy it</td></tr>
+        <tr><td class="k"><kbd>Shift</kbd><kbd>S</kbd></td><td>Out-of-range on / off</td></tr>
+        <tr><td class="k"><kbd>Shift</kbd><kbd>M</kbd></td><td>Min / Max on / off</td></tr>
+        <tr class="grp"><td colspan="2">Mouse on a thumbnail</td></tr>
+        <tr><td class="k">Click</td><td>Make its node active (<kbd>Shift</kbd>+click adds to the selection)</td></tr>
+        <tr><td class="k">Double-click</td><td>Solo: enlarge and draw on top, double-click again to restore</td></tr>
+        <tr><td class="k"><kbd>Alt</kbd><kbd>Shift</kbd> drag</td><td>Move around a zoomed flat preview</td></tr>
+        <tr><td class="k"><kbd>Alt</kbd><kbd>Shift</kbd> double-click</td><td>Next (right half) or previous (left half) split channel or UDIM tile</td></tr>
+        <tr><td class="k"><kbd>Shift</kbd>+click eye</td><td>Preview menu for that node</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc" id="prefs">
+  <div class="sec-head">
+    <p class="eyebrow">11 — Preferences</p>
+    <h2>Preferences</h2>
+  </div>
+  <p class="where"><b>Where</b> <span class="path">Edit<i>›</i>Preferences<i>›</i>Add-ons<i>›</i>Shader View</span></p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Default</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="3">Previews</td></tr>
+        <tr><td class="name">Preview Size</td><td class="def">150 px</td><td>Thumbnail size for nodes you haven't resized.</td></tr>
+        <tr><td class="name">Preview Icon Scale</td><td class="def">1.0</td><td>Extra scale for the icon strip and camera tools, on top of Blender's interface scale.</td></tr>
+        <tr><td class="name">Previews Visible by Default</td><td class="def">On</td><td>New or reset nodes start with their thumbnail shown.</td></tr>
+        <tr><td class="name">Node Preview Buttons</td><td class="def">On</td><td>Draws the eye button on each node header. It hides itself when covered by other nodes or previews.</td></tr>
+        <tr><td class="name">Highlight Output</td><td class="def">On · pink</td><td>Marks the previewed output socket on the node, in the colour you choose.</td></tr>
+        <tr class="grp"><td colspan="3">Rendering</td></tr>
+        <tr><td class="name">Render Engine</td><td class="def">EEVEE</td><td>Engine for new previews.</td></tr>
+        <tr><td class="name">Auto Resolution</td><td class="def">On</td><td>Picks each preview's resolution from its size and object.</td></tr>
+        <tr><td class="name">Render Resolution</td><td class="def">128</td><td>Resolution used when Auto is off.</td></tr>
+        <tr class="grp"><td colspan="3">Focus</td></tr>
+        <tr><td class="name">Fade Unrelated Previews</td><td class="def">On</td><td>Fades previews outside the selected node's chain.</td></tr>
+        <tr><td class="name">Fade Strength</td><td class="def">0.5</td><td>0 = no fade, 1 = fully transparent.</td></tr>
+        <tr><td class="name">Outline the Active Chain</td><td class="def">On</td><td>Border colour for previews in the chain and outside it.</td></tr>
+        <tr class="grp"><td colspan="3">Performance</td></tr>
+        <tr><td class="name">Update Threshold</td><td class="def">0.1 s</td><td>Minimum time between updates while you drag values. Raise it on heavy scenes.</td></tr>
+        <tr><td class="name">Render Window</td><td class="def">10</td><td>How many nodes are checked per batch.</td></tr>
+        <tr><td class="name">Disable All Node Previews</td><td class="def">Off</td><td>Stops all preview rendering (same as <kbd>Ctrl</kbd><kbd>E</kbd>).</td></tr>
+        <tr class="grp"><td colspan="3">Advanced</td></tr>
+        <tr><td class="name">Extra Add-ons in Preview Process</td><td class="def">empty</td><td>Comma-separated module names of add-ons whose custom nodes you preview. List only the ones you need; each slows the preview process start.</td></tr>
+        <tr><td class="name">Enable Debug Output</td><td class="def">Off</td><td>Prints detailed information to the system console.</td></tr>
+        <tr><td class="name">Log Folder</td><td class="def">add-on folder</td><td>Where log files are written. Attach them when you report a problem.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="doc faq" id="faq">
+  <div class="sec-head">
+    <p class="eyebrow">12 — Help</p>
+    <h2>Troubleshooting</h2>
+  </div>
+  <details>
+    <summary>No previews appear</summary>
+    <div>
+      <p>Press <kbd>Ctrl</kbd><kbd>E</kbd>: previews may be disabled for the whole file. If a single node is missing its thumbnail, click the eye on its header or press <kbd>Ctrl</kbd><kbd>H</kbd> with it selected.</p>
+      <p>Attribute and Color Attribute nodes and everything after them are skipped on purpose; the side panel says so when one is selected.</p>
+    </div>
+  </details>
+  <details>
+    <summary>Blender feels slow on a heavy material</summary>
+    <div>
+      <p>Lower the resolution or turn Auto off on big thumbnails, stay on EEVEE, raise <strong>Update Threshold</strong> in Preferences, and hide previews you don't need. Pinning the one preview you watch and hiding the rest works well on large trees.</p>
+    </div>
+  </details>
+  <details>
+    <summary>The Checker moves when I orbit the camera</summary>
+    <div>
+      <p>The node reads the view direction (Fresnel, Layer Weight, Camera Data or Geometry › Incoming), so the coordinate really does change with the camera. The panel shows a warning when this is the case.</p>
+    </div>
+  </details>
+  <details>
+    <summary>UV Space looks different from the mesh</summary>
+    <div>
+      <p>UV Space is the flattened layout, not your model. Nodes that read Geometry, Object Info, Tangent, Bump and similar inputs get different values there. Check those nodes on the Mesh preview instead.</p>
+    </div>
+  </details>
+  <details>
+    <summary>A node from another add-on shows an error</summary>
+    <div>
+      <p>Add that add-on's module name to <strong>Extra Add-ons in Preview Process</strong> in Preferences, then disable and re-enable Shader View to restart the preview process.</p>
+    </div>
+  </details>
+  <details>
+    <summary>How do I report a bug?</summary>
+    <div>
+      <p>Turn on <strong>Enable Debug Output</strong>, reproduce the problem, and send the log file from the <strong>Log Folder</strong> together with a short description to <a href="https://x.com/ShaderError">@ShaderError</a>. A small <code>.blend</code> that shows the issue helps a lot.</p>
+    </div>
+  </details>
+</section>
+
+  <footer class="foot">
+    <p>ShaderView is made by real person by real coding for people who still wanna spend their days making things in Blender by own hands. But this HTML page, however, done with some help from AI.</p>
+    <p><a href="https://x.com/ShaderError">@ShaderError</a></p>
+  </footer>
+
+</main>
+</body>
+</html>
